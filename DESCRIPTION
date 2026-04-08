@@ -1,0 +1,25 @@
+Package: cprd.search
+Title: Search the CPRD Aurum Medical Dictionary
+Version: 0.1.0
+Authors@R: 
+    person("Ramin", "", role = c("aut", "cre"),
+           email = "ramin@example.com")
+Description: A tool for searching the CPRD Aurum Medical Dictionary by keywords.
+    Supports multi-keyword AND/OR searches, fuzzy matching, filtering by category,
+    and exporting results to CSV. Useful for building code lists for epidemiological
+    studies using CPRD data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 3.5.0)
+Imports:
+    data.table,
+    stringdist
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+LazyData: true
+VignetteBuilder: knitr

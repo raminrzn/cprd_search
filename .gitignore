@@ -1,0 +1,16 @@
+# R package build artifacts
+*.tar.gz
+*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# The dictionary file is too large for GitHub
+CPRDAurumMedical.txt
