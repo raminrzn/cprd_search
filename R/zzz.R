@@ -16,12 +16,10 @@
 #'   \item{\code{\link{cprd_browse}}}{Interactive browser for the dictionary.}
 #' }
 #'
-#' @docType package
-#' @name cprd.search-package
 #' @import data.table
 #' @importFrom stringdist stringdist
 #' @importFrom utils write.csv
-NULL
+"_PACKAGE"
 
 # Suppress R CMD check notes for data.table NSE columns
 utils::globalVariables(c(
