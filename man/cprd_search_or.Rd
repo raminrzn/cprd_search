@@ -4,7 +4,7 @@
 \alias{cprd_search_or}
 \title{Search the CPRD Dictionary (OR logic)}
 \usage{
-cprd_search_or(..., min_obs = 0, column = "Term")
+cprd_search_or(..., min_obs = 0, column = "Term", select = NULL)
 }
 \arguments{
 \item{...}{Character strings. One or more keywords to search for.
@@ -13,9 +13,11 @@ At least one keyword must be present (OR logic).}
 \item{min_obs}{Integer. Minimum number of observations. Default is 0.}
 
 \item{column}{Character. Which column to search in. Default is "Term".}
+
+\item{select}{Character vector of column names to return, or NULL for all.}
 }
 \value{
-A \code{data.table} with matching rows, sorted by observations.
+A tibble with matching rows, sorted by observations.
 }
 \description{
 Search for medical terms where ANY keyword appears in the term description.
@@ -25,6 +27,9 @@ Useful for broad searches across related concepts.
 \dontrun{
 # Search for any mention of lung cancer or bronchial cancer
 cprd_search_or("lung cancer", "bronchial cancer", "pulmonary cancer")
+
+# Only get codes and names
+cprd_search_or("asthma", "copd", select = c("MedCodeId", "Term"))
 }
 
 }

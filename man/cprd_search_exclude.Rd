@@ -4,7 +4,13 @@
 \alias{cprd_search_exclude}
 \title{Search with Exclusions}
 \usage{
-cprd_search_exclude(include, exclude = NULL, min_obs = 0, or_logic = FALSE)
+cprd_search_exclude(
+  include,
+  exclude = NULL,
+  min_obs = 0,
+  or_logic = FALSE,
+  select = NULL
+)
 }
 \arguments{
 \item{include}{Character vector. Keywords that MUST be present (AND logic).}
@@ -15,9 +21,11 @@ cprd_search_exclude(include, exclude = NULL, min_obs = 0, or_logic = FALSE)
 
 \item{or_logic}{Logical. If TRUE, use OR logic for inclusion keywords.
 Default is FALSE (AND logic).}
+
+\item{select}{Character vector of column names to return, or NULL for all.}
 }
 \value{
-A \code{data.table} with matching rows.
+A tibble with matching rows.
 }
 \description{
 Search for terms matching inclusion keywords but NOT matching any

@@ -10,14 +10,19 @@
 #' @param column Character. Which column to search in. Default is "Term".
 #'   Can also be "OriginalReadCode", "CleansedReadCode", "MedCodeId", or
 #'   "SnomedCTConceptId".
+#' @param select Character vector of column names to return, or NULL (default)
+#'   for all columns. E.g. \code{c("MedCodeId", "Term")} for a clean output.
 #'
-#' @return A \code{data.table} with matching rows, sorted by number of
+#' @return A tibble with matching rows, sorted by number of
 #'   observations (most frequent first).
 #'
 #' @examples
 #' \dontrun{
 #' # Search for family history of lung cancer
 #' cprd_search("family history", "lung cancer")
+#'
+#' # Only return MedCodeId and Term
+#' cprd_search("diabetes", select = c("MedCodeId", "Term"))
 #'
 #' # Search for diabetes terms with at least 100 observations
 #' cprd_search("diabetes", min_obs = 100)
@@ -27,7 +32,7 @@
 #' }
 #'
 #' @export
-cprd_search <- function(..., min_obs = 0, column = "Term") {
+cprd_search <- function(..., min_obs = 0, column = "Term", select = NULL) {
     dict <- get_dictionary()
     keywords <- tolower(unlist(list(...)))
 
@@ -61,13 +66,7 @@ cprd_search <- function(..., min_obs = 0, column = "Term") {
     # Sort by observations (most common first)
     result <- result[order(-Observations)]
 
-    # Remove the helper column from output
-    out <- result[, .(MedCodeId, Term, Observations, OriginalReadCode,
-                       CleansedReadCode, SnomedCTConceptId,
-                       SnomedCTDescriptionId, Release, EmisCodeCategoryId)]
-
-    message("Found ", format(nrow(out), big.mark = ","), " matching terms.")
-    out
+    format_results(result, select)
 }
 
 
@@ -80,17 +79,21 @@ cprd_search <- function(..., min_obs = 0, column = "Term") {
 #'   At least one keyword must be present (OR logic).
 #' @param min_obs Integer. Minimum number of observations. Default is 0.
 #' @param column Character. Which column to search in. Default is "Term".
+#' @param select Character vector of column names to return, or NULL for all.
 #'
-#' @return A \code{data.table} with matching rows, sorted by observations.
+#' @return A tibble with matching rows, sorted by observations.
 #'
 #' @examples
 #' \dontrun{
 #' # Search for any mention of lung cancer or bronchial cancer
 #' cprd_search_or("lung cancer", "bronchial cancer", "pulmonary cancer")
+#'
+#' # Only get codes and names
+#' cprd_search_or("asthma", "copd", select = c("MedCodeId", "Term"))
 #' }
 #'
 #' @export
-cprd_search_or <- function(..., min_obs = 0, column = "Term") {
+cprd_search_or <- function(..., min_obs = 0, column = "Term", select = NULL) {
     dict <- get_dictionary()
     keywords <- tolower(unlist(list(...)))
 
@@ -121,12 +124,7 @@ cprd_search_or <- function(..., min_obs = 0, column = "Term") {
 
     result <- result[order(-Observations)]
 
-    out <- result[, .(MedCodeId, Term, Observations, OriginalReadCode,
-                       CleansedReadCode, SnomedCTConceptId,
-                       SnomedCTDescriptionId, Release, EmisCodeCategoryId)]
-
-    message("Found ", format(nrow(out), big.mark = ","), " matching terms.")
-    out
+    format_results(result, select)
 }
 
 
@@ -140,8 +138,9 @@ cprd_search_or <- function(..., min_obs = 0, column = "Term") {
 #' @param min_obs Integer. Minimum number of observations. Default is 0.
 #' @param or_logic Logical. If TRUE, use OR logic for inclusion keywords.
 #'   Default is FALSE (AND logic).
+#' @param select Character vector of column names to return, or NULL for all.
 #'
-#' @return A \code{data.table} with matching rows.
+#' @return A tibble with matching rows.
 #'
 #' @examples
 #' \dontrun{
@@ -160,7 +159,7 @@ cprd_search_or <- function(..., min_obs = 0, column = "Term") {
 #'
 #' @export
 cprd_search_exclude <- function(include, exclude = NULL, min_obs = 0,
-                                 or_logic = FALSE) {
+                                 or_logic = FALSE, select = NULL) {
     dict <- get_dictionary()
     include <- tolower(include)
     search_col <- dict$term_lower
@@ -194,12 +193,7 @@ cprd_search_exclude <- function(include, exclude = NULL, min_obs = 0,
 
     result <- result[order(-Observations)]
 
-    out <- result[, .(MedCodeId, Term, Observations, OriginalReadCode,
-                       CleansedReadCode, SnomedCTConceptId,
-                       SnomedCTDescriptionId, Release, EmisCodeCategoryId)]
-
-    message("Found ", format(nrow(out), big.mark = ","), " matching terms.")
-    out
+    format_results(result, select)
 }
 
 
@@ -215,8 +209,9 @@ cprd_search_exclude <- function(include, exclude = NULL, min_obs = 0,
 #'   "dl", "hamming", "lcs", "qgram", "cosine", "jaccard", "jw".
 #' @param min_obs Integer. Minimum observations. Default is 0.
 #' @param max_results Integer. Maximum number of results. Default is 50.
+#' @param select Character vector of column names to return, or NULL for all.
 #'
-#' @return A \code{data.table} with matching rows, sorted by distance
+#' @return A tibble with matching rows, sorted by distance
 #'   (best matches first).
 #'
 #' @examples
@@ -230,7 +225,7 @@ cprd_search_exclude <- function(include, exclude = NULL, min_obs = 0,
 #'
 #' @export
 cprd_search_fuzzy <- function(term, max_dist = 2, method = "jw",
-                               min_obs = 0, max_results = 50) {
+                               min_obs = 0, max_results = 50, select = NULL) {
     dict <- get_dictionary()
     search_term <- tolower(term)
 
@@ -280,9 +275,16 @@ cprd_search_fuzzy <- function(term, max_dist = 2, method = "jw",
         result <- result[1:max_results]
     }
 
-    out <- result[, .(MedCodeId, Term, Observations, OriginalReadCode,
-                       CleansedReadCode, SnomedCTConceptId, dist)]
-
-    message("Found ", format(nrow(out), big.mark = ","), " fuzzy matches.")
-    out
+    message("Found ", format(nrow(result), big.mark = ","), " fuzzy matches.")
+    
+    # For fuzzy, default select includes dist column
+    fuzzy_cols <- c("MedCodeId", "Term", "Observations", "OriginalReadCode",
+                    "CleansedReadCode", "SnomedCTConceptId", "dist")
+    if (is.null(select)) {
+        out <- result[, ..fuzzy_cols]
+    } else {
+        select_cols <- select
+        out <- result[, ..select_cols]
+    }
+    tibble::as_tibble(out)
 }

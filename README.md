@@ -21,7 +21,8 @@ install.packages("cprd.search", repos = NULL, type = "source")
 library(cprd.search)
 
 # 1. Load the dictionary (only needed once per session)
-load_cprd_dictionary("/path/to/CPRDAurumMedical.txt")
+# Use the full path to your CPRDAurumMedical.txt file
+load_cprd_dictionary("~/Documents/CPRDAurumMedical.txt")
 
 # 2. Search for family history of lung cancer
 results <- cprd_search("family history", "lung cancer")
@@ -39,12 +40,19 @@ cprd_export(results, "fh_lung_cancer_codes.csv")
 cprd_search("family history", "lung cancer")
 cprd_search("diabetes", "type 2")
 cprd_search("hypertension", min_obs = 100)
+
+# Only return specific columns
+cprd_search("diabetes", select = c("MedCodeId", "Term"))
+cprd_search("asthma", select = c("MedCodeId", "Term", "Observations"))
 ```
 
 ### `cprd_search_or()` — OR logic (any keyword can match)
 ```r
 # Any of these keywords will match
 cprd_search_or("lung cancer", "bronchial carcinoma", "pulmonary neoplasm")
+
+# Just codes and names
+cprd_search_or("asthma", "copd", select = c("MedCodeId", "Term"))
 ```
 
 ### `cprd_search_exclude()` — Search with exclusions
@@ -75,6 +83,40 @@ cprd_search_fuzzy("hypertenshun")
 cprd_browse()
 # Type keywords, get instant results
 # Type 'q' to quit
+```
+
+## Combining Multiple Searches
+
+Build a comprehensive code list from different search strategies:
+
+```r
+r1 <- cprd_search("lung cancer")
+r2 <- cprd_search("bronchial carcinoma")
+r3 <- cprd_search("pulmonary neoplasm")
+
+# Combine into one de-duplicated result
+all_codes <- cprd_combine(r1, r2, r3)
+print(all_codes)
+
+# Combine and keep only the columns you need
+all_codes <- cprd_combine(r1, r2, r3, select = c("MedCodeId", "Term"))
+```
+
+## Column Selection
+
+All search functions support a `select` parameter to return only the columns you need:
+
+```r
+# Available columns:
+# MedCodeId, Term, Observations, OriginalReadCode,
+# CleansedReadCode, SnomedCTConceptId, SnomedCTDescriptionId,
+# Release, EmisCodeCategoryId
+
+# Just the code and its name
+cprd_search("diabetes", select = c("MedCodeId", "Term"))
+
+# Code, name, and frequency
+cprd_search("diabetes", select = c("MedCodeId", "Term", "Observations"))
 ```
 
 ## Filtering

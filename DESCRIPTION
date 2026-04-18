@@ -16,7 +16,8 @@ Depends:
     R (>= 3.5.0)
 Imports:
     data.table,
-    stringdist
+    stringdist,
+    tibble
 Suggests:
     testthat (>= 3.0.0),
     knitr,

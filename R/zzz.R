@@ -18,6 +18,7 @@
 #'
 #' @import data.table
 #' @importFrom stringdist stringdist
+#' @importFrom tibble as_tibble
 #' @importFrom utils write.csv
 "_PACKAGE"
 
@@ -26,7 +27,7 @@ utils::globalVariables(c(
     ".", "MedCodeId", "Term", "Observations", "OriginalReadCode",
     "CleansedReadCode", "SnomedCTConceptId", "SnomedCTDescriptionId",
     "Release", "EmisCodeCategoryId", "term_lower", ":=", "dist",
-    "..export_cols", ".cprd_env"
+    "..export_cols", "..select_cols", "..fuzzy_cols", ".cprd_env"
 ))
 
 # Package-level environment for storing the loaded dictionary

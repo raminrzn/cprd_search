@@ -9,7 +9,8 @@ cprd_search_fuzzy(
   max_dist = 2,
   method = "jw",
   min_obs = 0,
-  max_results = 50
+  max_results = 50,
+  select = NULL
 )
 }
 \arguments{
@@ -24,9 +25,11 @@ Default is 2. Lower = stricter matching.}
 \item{min_obs}{Integer. Minimum observations. Default is 0.}
 
 \item{max_results}{Integer. Maximum number of results. Default is 50.}
+
+\item{select}{Character vector of column names to return, or NULL for all.}
 }
 \value{
-A \code{data.table} with matching rows, sorted by distance
+A tibble with matching rows, sorted by distance
 (best matches first).
 }
 \description{

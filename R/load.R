@@ -53,8 +53,13 @@ load_cprd_dictionary <- function(filepath = NULL, force = FALSE) {
         filepath <- found[1]
     }
 
+    # Expand ~ and normalize the path
+    filepath <- normalizePath(path.expand(filepath), mustWork = FALSE)
+
     if (!file.exists(filepath)) {
-        stop("File not found: ", filepath, call. = FALSE)
+        stop("File not found: ", filepath,
+             "\nCurrent working directory: ", getwd(),
+             call. = FALSE)
     }
 
     message("Loading CPRD Aurum Medical Dictionary from:\n  ", filepath)

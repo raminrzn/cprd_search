@@ -4,7 +4,7 @@
 \alias{cprd_search}
 \title{Search the CPRD Dictionary (AND logic)}
 \usage{
-cprd_search(..., min_obs = 0, column = "Term")
+cprd_search(..., min_obs = 0, column = "Term", select = NULL)
 }
 \arguments{
 \item{...}{Character strings. One or more keywords to search for.
@@ -16,9 +16,12 @@ Default is 0 (include all). Set higher to filter rare codes.}
 \item{column}{Character. Which column to search in. Default is "Term".
 Can also be "OriginalReadCode", "CleansedReadCode", "MedCodeId", or
 "SnomedCTConceptId".}
+
+\item{select}{Character vector of column names to return, or NULL (default)
+for all columns. E.g. \code{c("MedCodeId", "Term")} for a clean output.}
 }
 \value{
-A \code{data.table} with matching rows, sorted by number of
+A tibble with matching rows, sorted by number of
 observations (most frequent first).
 }
 \description{
@@ -29,6 +32,9 @@ This is useful for specific searches like "family history" + "lung cancer".
 \dontrun{
 # Search for family history of lung cancer
 cprd_search("family history", "lung cancer")
+
+# Only return MedCodeId and Term
+cprd_search("diabetes", select = c("MedCodeId", "Term"))
 
 # Search for diabetes terms with at least 100 observations
 cprd_search("diabetes", min_obs = 100)
