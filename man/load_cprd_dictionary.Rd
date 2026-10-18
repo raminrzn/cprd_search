@@ -7,35 +7,36 @@
 load_cprd_dictionary(filepath = NULL, force = FALSE)
 }
 \arguments{
-\item{filepath}{Character string. Path to the CPRDAurumMedical.txt file.
-If NULL (default), looks for the file in the current working directory.}
+\item{filepath}{Path to a dictionary file. With \code{NULL}, reuse the cached
+dictionary or look for \code{CPRDAurumMedical.txt} in the working directory.}
 
-\item{force}{Logical. If TRUE, reload the dictionary even if already loaded.
-Default is FALSE.}
+\item{force}{Logical. Reload the file even when its path is already cached.}
 }
 \value{
-A \code{data.table} with the full CPRD Aurum Medical Dictionary
-(returned invisibly).
+An independent copy of the loaded \code{data.table}, invisibly. Identifier
+columns are character, \code{Observations} is numeric, and \code{term_lower} is an
+internal lowercase copy of \code{Term}.
 }
 \description{
-Reads the CPRD Aurum Medical Dictionary from a tab-delimited text file
-and stores it in memory for fast searching.
+Read a user-supplied tab-delimited dictionary and cache it for searching.
+The package includes only a small, entirely synthetic example dictionary.
 }
 \details{
-The dictionary is cached in memory after the first load, so
-subsequent calls are instant. Use \code{force = TRUE} to reload.
+Required columns are \code{MedCodeId}, \code{Term}, and \code{Observations}.
+Standard additional columns are \code{OriginalReadCode}, \code{CleansedReadCode},
+\code{SnomedCTConceptId}, \code{SnomedCTDescriptionId}, \code{Release}, and
+\code{EmisCodeCategoryId}. All columns except \code{Observations} are read as character
+to preserve identifiers. Observation counts must be non-negative whole
+numbers; blank or \code{NA} counts are treated as missing. Missing terms do not
+match searches. Empty or missing medical code identifiers are rejected.
 
-The file should be the standard CPRD Aurum Medical Dictionary with columns:
-MedCodeId, Observations, OriginalReadCode, CleansedReadCode, Term,
-SnomedCTConceptId, SnomedCTDescriptionId, Release, EmisCodeCategoryId.
+Supplying a different path loads a new dictionary. Failed loads leave the
+previous cache intact. Use \code{force = TRUE} after changing a cached file.
+Real dictionaries must be obtained separately through the Clinical Practice
+Research Datalink; see \url{https://www.cprd.com/} for access information.
 }
 \examples{
-\dontrun{
-# Load from default location
-dict <- load_cprd_dictionary("path/to/CPRDAurumMedical.txt")
-
-# Check how many terms are loaded
+path <- system.file("extdata", "synthetic-dictionary.tsv", package = "cprd.search")
+dict <- load_cprd_dictionary(path)
 nrow(dict)
-}
-
 }

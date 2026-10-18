@@ -4,27 +4,27 @@
 \name{cprd.search-package}
 \alias{cprd.search}
 \alias{cprd.search-package}
-\title{cprd.search: Search the CPRD Aurum Medical Dictionary}
+\title{Search the Clinical Practice Research Datalink Aurum Dictionary}
 \description{
-A tool for searching the CPRD Aurum Medical Dictionary by keywords.
-Supports multi-keyword AND/OR searches, fuzzy matching, filtering,
-and exporting results. Useful for building code lists for
-epidemiological studies using CPRD data.
+Load a user-supplied dictionary with \code{\link[=load_cprd_dictionary]{load_cprd_dictionary()}}, search with
+\code{\link[=cprd_search]{cprd_search()}}, \code{\link[=cprd_search_or]{cprd_search_or()}}, \code{\link[=cprd_search_exclude]{cprd_search_exclude()}}, or
+\code{\link[=cprd_search_fuzzy]{cprd_search_fuzzy()}}, combine with \code{\link[=cprd_combine]{cprd_combine()}}, and save with
+\code{\link[=cprd_export]{cprd_export()}}. \code{\link[=cprd_browse]{cprd_browse()}} provides an interactive console.
 }
-\section{Main functions}{
+\details{
+Only synthetic example data is included. Real CPRD dictionary files must be
+obtained separately. Search results are candidates for review, not validated
+study phenotypes.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/raminrzn/cprd_search}
+  \item Report bugs at \url{https://github.com/raminrzn/cprd_search/issues}
+}
 
-\describe{
-\item{\code{\link{load_cprd_dictionary}}}{Load the CPRD Aurum Medical Dictionary from a text file.}
-\item{\code{\link{cprd_search}}}{Search using AND logic (all keywords must match).}
-\item{\code{\link{cprd_search_or}}}{Search using OR logic (any keyword can match).}
-\item{\code{\link{cprd_search_fuzzy}}}{Fuzzy search for approximate matches.}
-\item{\code{\link{cprd_search_exclude}}}{Search with inclusion and exclusion keywords.}
-\item{\code{\link{cprd_export}}}{Export search results to CSV.}
-\item{\code{\link{cprd_browse}}}{Interactive browser for the dictionary.}
 }
-}
-
 \author{
-\strong{Maintainer}: Ramin \email{ramin@example.com}
+\strong{Maintainer}: Ramin Rezaeianzadeh \email{ramin.rezaeianzadeh@outlook.com}
 
 }

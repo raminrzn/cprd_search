@@ -2,34 +2,34 @@
 % Please edit documentation in R/search.R
 \name{cprd_search_or}
 \alias{cprd_search_or}
-\title{Search the CPRD Dictionary (OR logic)}
+\title{Search the CPRD Dictionary with OR Logic}
 \usage{
-cprd_search_or(..., min_obs = 0, column = "Term", select = NULL)
+cprd_search_or(..., min_obs = 0, column = "Term", select = NULL, regex = FALSE)
 }
 \arguments{
-\item{...}{Character strings. One or more keywords to search for.
-At least one keyword must be present (OR logic).}
+\item{...}{One or more character strings or character vectors of keywords.
+Empty strings and missing values are not accepted.}
 
-\item{min_obs}{Integer. Minimum number of observations. Default is 0.}
+\item{min_obs}{Non-negative whole number giving the minimum observation
+count. Zero includes rows with missing counts; positive values exclude them.}
 
-\item{column}{Character. Which column to search in. Default is "Term".}
+\item{column}{Name of the dictionary column to search. Default is \code{"Term"}.}
 
-\item{select}{Character vector of column names to return, or NULL for all.}
+\item{select}{Character vector of column names to return, or \code{NULL} for all
+dictionary columns except the internal \code{term_lower} column.}
+
+\item{regex}{Logical. Interpret keywords as regular expressions if \code{TRUE}.
+The default is \code{FALSE}, so punctuation in medical codes is literal.}
 }
 \value{
-A tibble with matching rows, sorted by observations.
+A tibble, sorted by decreasing \code{Observations}, with missing counts
+last. No matches returns a zero-row tibble with the same columns and types.
 }
 \description{
-Search for medical terms where ANY keyword appears in the term description.
-Useful for broad searches across related concepts.
+Find rows containing any supplied keyword, using case-insensitive matching.
 }
 \examples{
-\dontrun{
-# Search for any mention of lung cancer or bronchial cancer
-cprd_search_or("lung cancer", "bronchial cancer", "pulmonary cancer")
-
-# Only get codes and names
-cprd_search_or("asthma", "copd", select = c("MedCodeId", "Term"))
-}
-
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
+cprd_search_or("asthma", "lung cancer", select = c("MedCodeId", "Term"))
 }

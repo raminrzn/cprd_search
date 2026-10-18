@@ -1,0 +1,5 @@
+synthetic-dictionary.tsv is an entirely fabricated, six-row teaching fixture
+created for this package. It contains no patient records or CPRD-derived data.
+Identifiers, Read codes, SNOMED fields and observation counts are illustrative;
+they must not be used as clinical codes or interpreted as genuine statistics.
+The file is distributed under the package's MIT license.

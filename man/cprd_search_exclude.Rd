@@ -9,41 +9,40 @@ cprd_search_exclude(
   exclude = NULL,
   min_obs = 0,
   or_logic = FALSE,
-  select = NULL
+  select = NULL,
+  column = "Term",
+  regex = FALSE
 )
 }
 \arguments{
-\item{include}{Character vector. Keywords that MUST be present (AND logic).}
+\item{include}{Non-empty character vector of inclusion keywords.}
 
-\item{exclude}{Character vector. Keywords that must NOT be present.}
+\item{exclude}{Character vector of exclusion keywords, or \code{NULL}.}
 
-\item{min_obs}{Integer. Minimum number of observations. Default is 0.}
+\item{min_obs}{Non-negative whole number giving the minimum observation
+count. Zero includes rows with missing counts; positive values exclude them.}
 
-\item{or_logic}{Logical. If TRUE, use OR logic for inclusion keywords.
-Default is FALSE (AND logic).}
+\item{or_logic}{Logical. Match any inclusion keyword if \code{TRUE}, or every
+inclusion keyword if \code{FALSE} (the default).}
 
-\item{select}{Character vector of column names to return, or NULL for all.}
+\item{select}{Character vector of column names to return, or \code{NULL} for all
+dictionary columns except the internal \code{term_lower} column.}
+
+\item{column}{Name of the dictionary column to search. Default is \code{"Term"}.}
+
+\item{regex}{Logical. Interpret keywords as regular expressions if \code{TRUE}.
+The default is \code{FALSE}, so punctuation in medical codes is literal.}
 }
 \value{
-A tibble with matching rows.
+A tibble, sorted by decreasing \code{Observations}, with missing counts
+last. No matches returns a zero-row tibble with the same columns and types.
 }
 \description{
-Search for terms matching inclusion keywords but NOT matching any
-exclusion keywords. Useful for refining broad searches.
+Find rows matching inclusion keywords but none of the exclusion keywords.
+Matching is case-insensitive and literal unless \code{regex = TRUE}.
 }
 \examples{
-\dontrun{
-# Family history of cancer, but not breast cancer
-cprd_search_exclude(
-  include = c("family history", "cancer"),
-  exclude = c("breast")
-)
-
-# Diabetes terms, excluding gestational
-cprd_search_exclude(
-  include = c("diabetes"),
-  exclude = c("gestational", "pregnancy")
-)
-}
-
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
+cprd_search_exclude("diabetes", exclude = "gestational")
 }
