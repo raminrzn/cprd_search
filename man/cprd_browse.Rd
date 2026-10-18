@@ -7,21 +7,21 @@
 cprd_browse(min_obs = 0)
 }
 \arguments{
-\item{min_obs}{Integer. Minimum observations filter. Default is 0.}
+\item{min_obs}{Non-negative whole number giving the minimum observation count.}
 }
 \value{
-NULL (called for side effects).
+\code{NULL}, invisibly, for its printing and prompting side effects.
 }
 \description{
-An interactive console-based browser that lets you search the dictionary
-repeatedly without re-typing function calls. Type 'q' to quit.
+Repeatedly search the loaded dictionary at a console prompt. Space-separated
+keywords use AND logic. Use \verb{OR: asthma, diabetes} for OR logic, or
+\code{diabetes -gestational} for exclusions. Prefixes are case-insensitive.
+Type \code{q} to quit. Keywords are literal, case-insensitive substrings.
 }
 \examples{
-\dontrun{
-cprd_browse()
-# Then type keywords at the prompt, e.g.:
-# > family history lung cancer
-# > q   (to quit)
+if (interactive()) {
+    load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                     package = "cprd.search"))
+    cprd_browse()
 }
-
 }

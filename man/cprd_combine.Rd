@@ -7,32 +7,25 @@
 cprd_combine(..., select = NULL)
 }
 \arguments{
-\item{...}{Two or more search result tibbles/data.frames to combine.}
+\item{...}{One or more search result tibbles, data.frames, or data.tables.
+Each must contain a non-missing, non-empty \code{MedCodeId} column.}
 
-\item{select}{Character vector of columns to keep, or NULL for all.
-Default is NULL.}
+\item{select}{Character vector of columns to keep, or \code{NULL} for all.}
 }
 \value{
-A tibble with all unique rows, sorted by Observations
-(most frequent first).
+A tibble deduplicated by \code{MedCodeId}, sorted by decreasing
+\code{Observations} when available (missing counts last). Otherwise input order
+is preserved. Conflicting duplicate rows use the first row, without merging
+its values with later rows.
 }
 \description{
-Combine results from multiple searches into one de-duplicated table.
-Useful when building a comprehensive code list from different search
-strategies.
+Combine search result tables, keeping the first occurrence of each
+\code{MedCodeId}. Columns absent from an input are filled with missing values.
 }
 \examples{
-\dontrun{
-# Build a comprehensive lung cancer code list
-r1 <- cprd_search("lung cancer")
-r2 <- cprd_search("bronchial carcinoma")
-r3 <- cprd_search("pulmonary neoplasm")
-
-all_codes <- cprd_combine(r1, r2, r3)
-print(all_codes)
-
-# Combine and keep only MedCodeId and Term
-all_codes <- cprd_combine(r1, r2, r3, select = c("MedCodeId", "Term"))
-}
-
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
+a <- cprd_search("diabetes", select = c("MedCodeId", "Term"))
+b <- cprd_search_or("diabetes", "asthma", select = c("MedCodeId", "Term"))
+cprd_combine(a, b)
 }

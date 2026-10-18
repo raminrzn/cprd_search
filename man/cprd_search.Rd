@@ -2,45 +2,38 @@
 % Please edit documentation in R/search.R
 \name{cprd_search}
 \alias{cprd_search}
-\title{Search the CPRD Dictionary (AND logic)}
+\title{Search the CPRD Dictionary with AND Logic}
 \usage{
-cprd_search(..., min_obs = 0, column = "Term", select = NULL)
+cprd_search(..., min_obs = 0, column = "Term", select = NULL, regex = FALSE)
 }
 \arguments{
-\item{...}{Character strings. One or more keywords to search for.
-All keywords must be present in the term (AND logic).}
+\item{...}{One or more character strings or character vectors of keywords.
+Empty strings and missing values are not accepted.}
 
-\item{min_obs}{Integer. Minimum number of observations to include.
-Default is 0 (include all). Set higher to filter rare codes.}
+\item{min_obs}{Non-negative whole number giving the minimum observation
+count. Zero includes rows with missing counts; positive values exclude them.}
 
-\item{column}{Character. Which column to search in. Default is "Term".
-Can also be "OriginalReadCode", "CleansedReadCode", "MedCodeId", or
-"SnomedCTConceptId".}
+\item{column}{Name of the dictionary column to search. Default is \code{"Term"}.}
 
-\item{select}{Character vector of column names to return, or NULL (default)
-for all columns. E.g. \code{c("MedCodeId", "Term")} for a clean output.}
+\item{select}{Character vector of column names to return, or \code{NULL} for all
+dictionary columns except the internal \code{term_lower} column.}
+
+\item{regex}{Logical. Interpret keywords as regular expressions if \code{TRUE}.
+The default is \code{FALSE}, so punctuation in medical codes is literal.}
 }
 \value{
-A tibble with matching rows, sorted by number of
-observations (most frequent first).
+A tibble, sorted by decreasing \code{Observations}, with missing counts
+last. No matches returns a zero-row tibble with the same columns and types.
 }
 \description{
-Search for medical terms where ALL keywords appear in the term description.
-This is useful for specific searches like "family history" + "lung cancer".
+Find rows containing every supplied keyword. Matching is case-insensitive
+and uses literal substrings unless \code{regex = TRUE}.
 }
 \examples{
-\dontrun{
-# Search for family history of lung cancer
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
 cprd_search("family history", "lung cancer")
-
-# Only return MedCodeId and Term
-cprd_search("diabetes", select = c("MedCodeId", "Term"))
-
-# Search for diabetes terms with at least 100 observations
-cprd_search("diabetes", min_obs = 100)
-
-# Search by Read code
-cprd_search("H33", column = "CleansedReadCode")
-}
-
+cprd_search("diabetes", min_obs = 50, select = c("MedCodeId", "Term"))
+cprd_search("H33..", column = "CleansedReadCode")
+cprd_search("^asthma$", regex = TRUE)
 }

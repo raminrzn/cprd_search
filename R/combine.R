@@ -1,95 +1,42 @@
-#' Format search results
-#'
-#' Internal helper that applies column selection and converts to tibble.
-#'
-#' @param result A data.table of raw search results.
-#' @param select Character vector of column names to return, or NULL for all.
-#' @return A tibble with the selected columns.
-#' @keywords internal
-format_results <- function(result, select = NULL) {
-    # All available output columns (exclude internal helper columns)
-    all_cols <- c("MedCodeId", "Term", "Observations", "OriginalReadCode",
-                  "CleansedReadCode", "SnomedCTConceptId",
-                  "SnomedCTDescriptionId", "Release", "EmisCodeCategoryId")
-
-    if (is.null(select)) {
-        select_cols <- all_cols
-    } else {
-        # Validate column names
-        bad <- setdiff(select, all_cols)
-        if (length(bad) > 0) {
-            stop("Unknown column(s): ", paste(bad, collapse = ", "),
-                 "\nAvailable: ", paste(all_cols, collapse = ", "),
-                 call. = FALSE)
-        }
-        select_cols <- select
-    }
-
-    out <- result[, ..select_cols]
-
-    message("Found ", format(nrow(out), big.mark = ","), " matching terms.")
-    tibble::as_tibble(out)
-}
-
-
 #' Combine Multiple Search Results
 #'
-#' Combine results from multiple searches into one de-duplicated table.
-#' Useful when building a comprehensive code list from different search
-#' strategies.
-#'
-#' @param ... Two or more search result tibbles/data.frames to combine.
-#' @param select Character vector of columns to keep, or NULL for all.
-#'   Default is NULL.
-#'
-#' @return A tibble with all unique rows, sorted by Observations
-#'   (most frequent first).
-#'
+#' Combine search result tables, keeping the first occurrence of each
+#' `MedCodeId`. Columns absent from an input are filled with missing values.
+#' @param ... One or more search result tibbles, data.frames, or data.tables.
+#'   Each must contain a non-missing, non-empty `MedCodeId` column.
+#' @param select Character vector of columns to keep, or `NULL` for all.
+#' @return A tibble deduplicated by `MedCodeId`, sorted by decreasing
+#'   `Observations` when available (missing counts last). Otherwise input order
+#'   is preserved. Conflicting duplicate rows use the first row, without merging
+#'   its values with later rows.
 #' @examples
-#' \dontrun{
-#' # Build a comprehensive lung cancer code list
-#' r1 <- cprd_search("lung cancer")
-#' r2 <- cprd_search("bronchial carcinoma")
-#' r3 <- cprd_search("pulmonary neoplasm")
-#'
-#' all_codes <- cprd_combine(r1, r2, r3)
-#' print(all_codes)
-#'
-#' # Combine and keep only MedCodeId and Term
-#' all_codes <- cprd_combine(r1, r2, r3, select = c("MedCodeId", "Term"))
-#' }
-#'
+#' load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+#'                                  package = "cprd.search"))
+#' a <- cprd_search("diabetes", select = c("MedCodeId", "Term"))
+#' b <- cprd_search_or("diabetes", "asthma", select = c("MedCodeId", "Term"))
+#' cprd_combine(a, b)
 #' @export
 cprd_combine <- function(..., select = NULL) {
-    results_list <- list(...)
-
-    if (length(results_list) < 1) {
-        stop("Please provide at least one result set to combine.", call. = FALSE)
-    }
-
-    # Convert all to data.tables and bind
-    combined <- data.table::rbindlist(
-        lapply(results_list, data.table::as.data.table),
-        fill = TRUE
-    )
-
-    # De-duplicate by MedCodeId
-    combined <- unique(combined, by = "MedCodeId")
-
-    # Sort by observations
-    combined <- combined[order(-Observations)]
-
-    # Apply column selection
-    if (!is.null(select)) {
-        bad <- setdiff(select, names(combined))
-        if (length(bad) > 0) {
-            stop("Unknown column(s): ", paste(bad, collapse = ", "), call. = FALSE)
+    results <- list(...)
+    if (!length(results)) stop("Please provide at least one result set to combine.", call. = FALSE)
+    results <- lapply(results, function(x) {
+        if (!is.data.frame(x) || !"MedCodeId" %in% names(x)) {
+            stop("Each result must be a data.frame with a 'MedCodeId' column.", call. = FALSE)
         }
-        select_cols <- select
-        combined <- combined[, ..select_cols]
+        x <- as.data.frame(x)
+        x$MedCodeId <- as.character(x$MedCodeId)
+        check_text(x$MedCodeId, "MedCodeId", empty = TRUE)
+        if ("Observations" %in% names(x) && !is.numeric(x$Observations)) {
+            stop("'Observations' must be numeric when present.", call. = FALSE)
+        }
+        x
+    })
+    combined <- tibble::as_tibble(data.table::rbindlist(results, use.names = TRUE, fill = TRUE))
+    combined <- combined[!duplicated(combined$MedCodeId), , drop = FALSE]
+    if ("Observations" %in% names(combined)) {
+        combined <- combined[order(-combined$Observations, na.last = TRUE), , drop = FALSE]
     }
-
-    message("Combined: ", format(nrow(combined), big.mark = ","),
-            " unique terms.")
-    tibble::as_tibble(combined)
+    combined <- select_columns(combined, select)
+    message("Combined: ", nrow(combined), " unique terms.")
+    combined
 }

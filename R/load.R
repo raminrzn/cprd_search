@@ -1,96 +1,84 @@
 #' Load the CPRD Aurum Medical Dictionary
 #'
-#' Reads the CPRD Aurum Medical Dictionary from a tab-delimited text file
-#' and stores it in memory for fast searching.
+#' Read a user-supplied tab-delimited dictionary and cache it for searching.
+#' The package includes only a small, entirely synthetic example dictionary.
 #'
-#' @param filepath Character string. Path to the CPRDAurumMedical.txt file.
-#'   If NULL (default), looks for the file in the current working directory.
-#' @param force Logical. If TRUE, reload the dictionary even if already loaded.
-#'   Default is FALSE.
+#' @param filepath Path to a dictionary file. With `NULL`, reuse the cached
+#'   dictionary or look for `CPRDAurumMedical.txt` in the working directory.
+#' @param force Logical. Reload the file even when its path is already cached.
+#' @return An independent copy of the loaded `data.table`, invisibly. Identifier
+#'   columns are character, `Observations` is numeric, and `term_lower` is an
+#'   internal lowercase copy of `Term`.
+#' @details Required columns are `MedCodeId`, `Term`, and `Observations`.
+#'   Standard additional columns are `OriginalReadCode`, `CleansedReadCode`,
+#'   `SnomedCTConceptId`, `SnomedCTDescriptionId`, `Release`, and
+#'   `EmisCodeCategoryId`. All columns except `Observations` are read as character
+#'   to preserve identifiers. Observation counts must be non-negative whole
+#'   numbers; blank or `NA` counts are treated as missing. Missing terms do not
+#'   match searches. Empty or missing medical code identifiers are rejected.
 #'
-#' @return A \code{data.table} with the full CPRD Aurum Medical Dictionary
-#'   (returned invisibly).
-#'
-#' @details The dictionary is cached in memory after the first load, so
-#'   subsequent calls are instant. Use \code{force = TRUE} to reload.
-#'
-#'   The file should be the standard CPRD Aurum Medical Dictionary with columns:
-#'   MedCodeId, Observations, OriginalReadCode, CleansedReadCode, Term,
-#'   SnomedCTConceptId, SnomedCTDescriptionId, Release, EmisCodeCategoryId.
-#'
+#'   Supplying a different path loads a new dictionary. Failed loads leave the
+#'   previous cache intact. Use `force = TRUE` after changing a cached file.
+#'   Real dictionaries must be obtained separately through the Clinical Practice
+#'   Research Datalink; see <https://www.cprd.com/> for access information.
 #' @examples
-#' \dontrun{
-#' # Load from default location
-#' dict <- load_cprd_dictionary("path/to/CPRDAurumMedical.txt")
-#'
-#' # Check how many terms are loaded
+#' path <- system.file("extdata", "synthetic-dictionary.tsv", package = "cprd.search")
+#' dict <- load_cprd_dictionary(path)
 #' nrow(dict)
-#' }
-#'
 #' @export
 load_cprd_dictionary <- function(filepath = NULL, force = FALSE) {
-
-    # Return cached version if available
-    if (!force && exists("dictionary", envir = .cprd_env)) {
-        message("Dictionary already loaded (",
-                format(nrow(.cprd_env$dictionary), big.mark = ","),
-                " terms). Use force = TRUE to reload.")
-        return(invisible(.cprd_env$dictionary))
-    }
-
-    # Try to find the file
+    check_flag(force, "force")
+    cached <- exists("dictionary", envir = .cprd_env, inherits = FALSE)
     if (is.null(filepath)) {
-        candidates <- c(
-            "CPRDAurumMedical.txt",
-            file.path("inst", "extdata", "CPRDAurumMedical.txt"),
-            file.path("data-raw", "CPRDAurumMedical.txt")
-        )
-        found <- candidates[file.exists(candidates)]
-        if (length(found) == 0) {
-            stop("Cannot find CPRDAurumMedical.txt. Please provide the filepath argument.",
-                 call. = FALSE)
-        }
-        filepath <- found[1]
+        if (cached && !force) return(invisible(data.table::copy(.cprd_env$dictionary)))
+        filepath <- if (cached) .cprd_env$filepath else "CPRDAurumMedical.txt"
     }
-
-    # Expand ~ and normalize the path
+    check_text(filepath, "filepath", scalar = TRUE)
     filepath <- normalizePath(path.expand(filepath), mustWork = FALSE)
-
-    if (!file.exists(filepath)) {
-        stop("File not found: ", filepath,
-             "\nCurrent working directory: ", getwd(),
+    if (!file.exists(filepath) || dir.exists(filepath)) {
+        stop("File not found: ", filepath, call. = FALSE)
+    }
+    if (cached && !force && identical(filepath, .cprd_env$filepath)) {
+        return(invisible(data.table::copy(.cprd_env$dictionary)))
+    }
+    # Reading all columns as character prevents loss of leading zeroes and
+    # rounding of identifiers beyond double-precision integer accuracy.
+    dict <- withCallingHandlers(data.table::fread(
+        file = filepath, sep = "\t", header = TRUE, quote = "", fill = FALSE,
+        colClasses = "character", na.strings = NULL, encoding = "UTF-8",
+        nThread = 1L, showProgress = FALSE, check.names = FALSE
+    ), warning = function(w) {
+        stop("Cannot read dictionary completely: ", conditionMessage(w), call. = FALSE)
+    })
+    if (anyDuplicated(names(dict)) || any(!nzchar(names(dict)))) {
+        stop("Dictionary column names must be non-empty and unique.", call. = FALSE)
+    }
+    missing <- setdiff(c("MedCodeId", "Term", "Observations"), names(dict))
+    if (length(missing)) {
+        stop("Missing required column(s): ", paste(missing, collapse = ", "),
              call. = FALSE)
     }
-
-    message("Loading CPRD Aurum Medical Dictionary from:\n  ", filepath)
-
-    # Read the tab-delimited file
-    dict <- data.table::fread(filepath, sep = "\t", header = TRUE,
-                               quote = "", fill = TRUE,
-                               encoding = "UTF-8")
-
-    # Create a lowercase version of Term for faster searching
-    dict[, term_lower := tolower(Term)]
-
-    # Store in package environment
-    assign("dictionary", dict, envir = .cprd_env)
-
-    message("Loaded ", format(nrow(dict), big.mark = ","), " medical terms.")
-    invisible(dict)
+    check_text(dict[["MedCodeId"]], "MedCodeId", empty = TRUE)
+    counts <- trimws(dict[["Observations"]])
+    counts[counts %in% c("", "NA")] <- NA_character_
+    observations <- suppressWarnings(as.numeric(counts))
+    invalid <- !is.na(counts) & (is.na(observations) | !is.finite(observations) |
+                               observations < 0 | observations != floor(observations))
+    if (any(invalid)) {
+        stop("'Observations' must contain non-negative whole numbers or missing values.",
+             call. = FALSE)
+    }
+    data.table::set(dict, j = "Observations", value = observations)
+    data.table::set(dict, j = "term_lower", value = tolower(dict[["Term"]]))
+    .cprd_env$dictionary <- dict
+    .cprd_env$filepath <- filepath
+    message("Loaded ", nrow(dict), " medical terms.")
+    invisible(data.table::copy(dict))
 }
 
-
-#' Get the loaded CPRD dictionary
-#'
-#' Internal helper to retrieve the cached dictionary, with a helpful
-#' error message if it hasn't been loaded yet.
-#'
-#' @return A \code{data.table} with the CPRD dictionary.
-#' @keywords internal
 get_dictionary <- function() {
-    if (!exists("dictionary", envir = .cprd_env)) {
-        stop("Dictionary not loaded. Run load_cprd_dictionary() first.",
-             call. = FALSE)
+    if (!exists("dictionary", envir = .cprd_env, inherits = FALSE)) {
+        stop("Dictionary not loaded. Run load_cprd_dictionary() first.", call. = FALSE)
     }
     .cprd_env$dictionary
 }

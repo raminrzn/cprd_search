@@ -1,0 +1,87 @@
+---
+title: "Build and review a candidate code list"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Build and review a candidate code list}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This workflow uses six entirely fabricated dictionary rows. The identifiers and
+observation counts are teaching examples, not genuine clinical codes or data.
+Users obtain a real dictionary separately through their CPRD access arrangements.
+Search output is a set of candidates to review against a study definition.
+
+## Load and inspect
+
+```{r}
+library(cprd.search)
+file <- system.file("extdata", "synthetic-dictionary.tsv", package = "cprd.search")
+dictionary <- load_cprd_dictionary(file)
+names(dictionary)
+```
+
+`MedCodeId`, `Term` and `Observations` are required. Codes are read as character,
+while counts are numeric. A different explicit path switches dictionaries;
+`force = TRUE` refreshes the same path after a file changes.
+
+## Search, exclude and select
+
+```{r}
+cprd_search("family history", "lung cancer")
+cprd_search_or("diabetes", "asthma", min_obs = 20)
+review <- cprd_search_exclude("diabetes", exclude = "gestational")
+review[, c("MedCodeId", "Term")]
+```
+
+Keywords are case-insensitive literal substrings. The default does not interpret
+code punctuation as a regular expression. Use `regex = TRUE` deliberately when
+patterns are needed:
+
+```{r}
+cprd_search("H33..", column = "CleansedReadCode")
+cprd_search("^asthma$", regex = TRUE)
+```
+
+## Approximate complete-term matches
+
+```{r}
+cprd_search_fuzzy("diabeties", select = c("MedCodeId", "Term", "dist"))
+cprd_search_fuzzy("xiabetes", max_dist = 1)
+```
+
+The default optimal-string-alignment distance counts edits to the whole
+term, with a maximum of two. It does not search each word inside longer
+phrases. `jw`, `cosine` and `jaccard` use normalized distances and default to
+0.1; their thresholds must be within 0–1. Review approximate matches before
+including them in a code list.
+
+## Combine and export
+
+```{r}
+asthma <- cprd_search("asthma", select = c("MedCodeId", "Term"))
+diabetes <- cprd_search("diabetes", select = c("MedCodeId", "Term"))
+codes <- cprd_combine(asthma, diabetes, diabetes)
+codes
+```
+
+Combining keeps the first occurrence of each medical code. It sorts by
+observation count when available and otherwise retains input order.
+
+```{r}
+output <- tempfile(fileext = ".csv")
+cprd_export(codes, output)
+restored <- utils::read.csv(output, colClasses = "character")
+stopifnot(identical(restored$MedCodeId, codes$MedCodeId))
+restored
+unlink(output)
+```
+
+Always tell the importing software that identifier columns contain text.
+Automatic numeric conversion can remove leading zeroes or round long IDs.
+The package's synthetic tests exercise export/reimport, search behavior,
+empty results and invalid input without requiring access to real CPRD files.

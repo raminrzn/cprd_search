@@ -1,0 +1,7 @@
+MedCodeId	Observations	OriginalReadCode	CleansedReadCode	Term	SnomedCTConceptId	SnomedCTDescriptionId	Release	EmisCodeCategoryId
+00001	100	C10..	C10..	diabetes	9007199254740993	9007199254740995	synthetic	01
+00002	50	C10.1	C10.1	gestational diabetes	9007199254740994	9007199254740996	synthetic	01
+00003	40	A0001	A0001	diaphragm problem	9007199254740995	9007199254740997	synthetic	02
+00004	30	B0001	B0001	family history of lung cancer	9007199254740996	9007199254740998	synthetic	02
+00005	20	H33..	H33..	asthma	9007199254740997	9007199254740999	synthetic	01
+00006	10	H33X1	H33X1	lung cancer	9007199254740998	9007199254741000	synthetic	01

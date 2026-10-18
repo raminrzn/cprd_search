@@ -2,47 +2,59 @@
 % Please edit documentation in R/search.R
 \name{cprd_search_fuzzy}
 \alias{cprd_search_fuzzy}
-\title{Fuzzy Search the CPRD Dictionary}
+\title{Fuzzy Search Complete Dictionary Terms}
 \usage{
 cprd_search_fuzzy(
   term,
-  max_dist = 2,
-  method = "jw",
+  max_dist = NULL,
+  method = "osa",
   min_obs = 0,
   max_results = 50,
   select = NULL
 )
 }
 \arguments{
-\item{term}{Character string. The term to search for.}
+\item{term}{One non-empty character string to compare with \code{Term}.}
 
-\item{max_dist}{Numeric. Maximum string distance for a match.
-Default is 2. Lower = stricter matching.}
+\item{max_dist}{Maximum distance to accept. \code{NULL} uses 2 for edit/count
+distances and 0.1 for \code{"jw"}, \code{"cosine"}, or \code{"jaccard"}. For these
+normalized methods the threshold must be between 0 and 1.}
 
-\item{method}{Character. Distance method: "osa" (default), "lv",
-"dl", "hamming", "lcs", "qgram", "cosine", "jaccard", "jw".}
+\item{method}{Distance method: \code{"osa"} (default), \code{"lv"}, \code{"dl"},
+\code{"hamming"}, \code{"lcs"}, \code{"qgram"}, \code{"cosine"}, \code{"jaccard"}, or \code{"jw"}.
+See \link[stringdist:stringdist-metrics]{stringdist::stringdist-metrics} for definitions. \code{"jw"} uses Jaro
+distance with the default prefix weight of zero.}
 
-\item{min_obs}{Integer. Minimum observations. Default is 0.}
+\item{min_obs}{Non-negative whole number giving the minimum observation
+count. Zero includes rows with missing counts; positive values exclude them.}
 
-\item{max_results}{Integer. Maximum number of results. Default is 50.}
+\item{max_results}{Non-negative whole number limiting the result count.
+Zero returns a correctly typed, empty result.}
 
-\item{select}{Character vector of column names to return, or NULL for all.}
+\item{select}{Character vector of column names to return, or \code{NULL} for all
+dictionary columns except the internal \code{term_lower} column.}
 }
 \value{
-A tibble with matching rows, sorted by distance
-(best matches first).
+A tibble containing dictionary columns and numeric \code{dist}, ordered
+by increasing distance, then decreasing observations. \code{select} can include
+\code{dist}. Missing or empty descriptions do not match.
 }
 \description{
-Search for medical terms using approximate (fuzzy) string matching.
-Useful when you're unsure of exact spelling.
+Compare a query with complete, case-insensitive term descriptions using
+string distances. Every eligible term is compared; no prefix filter is used.
+}
+\details{
+Distances compare the whole query with the whole description, not
+individual words or substrings. Thus \code{"diabeties"} can match \code{"diabetes"}
+at an edit distance of 1, but a longer description such as
+\code{"gestational diabetes"} requires a larger edit threshold. Use
+\code{\link[=cprd_search]{cprd_search()}} for literal substring searches. Search candidates still
+require review when building a study code list.
 }
 \examples{
-\dontrun{
-# Fuzzy search for "diabeties" (misspelled)
-cprd_search_fuzzy("diabeties")
-
-# Stricter matching
-cprd_search_fuzzy("hypertension", max_dist = 1)
-}
-
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
+cprd_search_fuzzy("diabeties", select = c("MedCodeId", "Term", "dist"))
+cprd_search_fuzzy("xiabetes", max_dist = 1)
+cprd_search_fuzzy("diabeties", method = "jw", max_dist = 0.1)
 }

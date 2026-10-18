@@ -1,168 +1,127 @@
 # cprd.search
 
-An R package for searching the **CPRD Aurum Medical Dictionary**. Quickly find medical codes by keyword for building code lists in epidemiological research.
+Search a user-supplied Clinical Practice Research Datalink (CPRD) Aurum medical
+dictionary and assemble candidate medical code lists. Results are tibbles;
+identifiers remain character strings so long codes and leading zeroes are preserved.
 
 ## Installation
 
+The package is being prepared for its first CRAN submission. Install the
+GitHub version with its dependencies:
+
 ```r
-# Install dependencies
-install.packages(c("data.table", "stringdist"))
-
-# Install from source (from the parent directory)
-install.packages("cprd.search", repos = NULL, type = "source")
-
-# Or using devtools from inside the package folder
-# devtools::install()
+install.packages("remotes")
+remotes::install_github("raminrzn/cprd_search")
 ```
 
-## Quick Start
+From a local checkout, use `remotes::install_local("path/to/cprd_search")`.
+
+## Try it with synthetic data
+
+This example runs without access to CPRD. All six rows, identifiers and counts
+in the bundled fixture are fabricated and must not be used as clinical codes.
 
 ```r
 library(cprd.search)
+path <- system.file("extdata", "synthetic-dictionary.tsv", package = "cprd.search")
+load_cprd_dictionary(path)
 
-# 1. Load the dictionary (only needed once per session)
-# Use the full path to your CPRDAurumMedical.txt file
-load_cprd_dictionary("~/Documents/CPRDAurumMedical.txt")
-
-# 2. Search for family history of lung cancer
-results <- cprd_search("family history", "lung cancer")
-print(results)
-
-# 3. Export to CSV
-cprd_export(results, "fh_lung_cancer_codes.csv")
-```
-
-## Search Functions
-
-### `cprd_search()` — AND logic (all keywords must match)
-```r
-# All keywords must appear in the term
+# All keywords / any keyword / exclusions
 cprd_search("family history", "lung cancer")
-cprd_search("diabetes", "type 2")
-cprd_search("hypertension", min_obs = 100)
+cprd_search_or("asthma", "diabetes")
+cprd_search_exclude("diabetes", exclude = "gestational")
 
-# Only return specific columns
-cprd_search("diabetes", select = c("MedCodeId", "Term"))
-cprd_search("asthma", select = c("MedCodeId", "Term", "Observations"))
+# Select columns and combine overlapping searches
+first <- cprd_search("diabetes", select = c("MedCodeId", "Term"))
+second <- cprd_search("asthma", select = c("MedCodeId", "Term"))
+codes <- cprd_combine(first, second)
+
+# Export, then read identifiers explicitly as character
+file <- tempfile(fileext = ".csv")
+cprd_export(codes, file)
+utils::read.csv(file, colClasses = "character")
+unlink(file)
 ```
 
-### `cprd_search_or()` — OR logic (any keyword can match)
-```r
-# Any of these keywords will match
-cprd_search_or("lung cancer", "bronchial carcinoma", "pulmonary neoplasm")
+For a real dictionary, obtain the file through your CPRD access arrangements
+(see [CPRD](https://www.cprd.com/)) and call
+`load_cprd_dictionary("path/to/CPRDAurumMedical.txt")`. No real dictionary or
+patient data is distributed with the package. Searches produce candidates for
+review, not validated study phenotypes.
 
-# Just codes and names
-cprd_search_or("asthma", "copd", select = c("MedCodeId", "Term"))
-```
+## Matching and filtering
 
-### `cprd_search_exclude()` — Search with exclusions
-```r
-# Diabetes but NOT gestational
-cprd_search_exclude(
-  include = c("diabetes"),
-  exclude = c("gestational", "pregnancy")
-)
-
-# Family history of cancer, but not breast
-cprd_search_exclude(
-  include = c("family history", "cancer"),
-  exclude = c("breast")
-)
-```
-
-### `cprd_search_fuzzy()` — Fuzzy / approximate matching
-```r
-# Handles misspellings
-cprd_search_fuzzy("diabeties")
-cprd_search_fuzzy("hypertenshun")
-```
-
-### `cprd_browse()` — Interactive browser
-```r
-# Opens an interactive search prompt
-cprd_browse()
-# Type keywords, get instant results
-# Type 'q' to quit
-```
-
-## Combining Multiple Searches
-
-Build a comprehensive code list from different search strategies:
+Keyword matching is case-insensitive and **literal by default**. Punctuation in
+Read codes, including dots, is not a wildcard. Set `regex = TRUE` explicitly to
+use regular expressions.
 
 ```r
-r1 <- cprd_search("lung cancer")
-r2 <- cprd_search("bronchial carcinoma")
-r3 <- cprd_search("pulmonary neoplasm")
-
-# Combine into one de-duplicated result
-all_codes <- cprd_combine(r1, r2, r3)
-print(all_codes)
-
-# Combine and keep only the columns you need
-all_codes <- cprd_combine(r1, r2, r3, select = c("MedCodeId", "Term"))
+cprd_search("H33..", column = "CleansedReadCode")
+cprd_search("^asthma$", regex = TRUE)
+cprd_search("diabetes", min_obs = 50, select = c("MedCodeId", "Term"))
 ```
 
-## Column Selection
+AND, OR and exclusion searches accept `column`, `regex`, `min_obs` and `select`.
+`column` may name any loaded column, including `EmisCodeCategoryId`; matching
+is by substring, so use an anchored regular expression for an exact category.
+Fuzzy search always uses `Term`. A positive `min_obs` excludes missing counts;
+zero includes them and places them last when sorting.
 
-All search functions support a `select` parameter to return only the columns you need:
+## Fuzzy matching
+
+Fuzzy search compares **complete descriptions**, not individual words. Its
+default is optimal string alignment (`method = "osa"`) with at most two edits.
+There is no prefix filter, so misspellings at the start of a term can match.
 
 ```r
-# Available columns:
-# MedCodeId, Term, Observations, OriginalReadCode,
-# CleansedReadCode, SnomedCTConceptId, SnomedCTDescriptionId,
-# Release, EmisCodeCategoryId
-
-# Just the code and its name
-cprd_search("diabetes", select = c("MedCodeId", "Term"))
-
-# Code, name, and frequency
-cprd_search("diabetes", select = c("MedCodeId", "Term", "Observations"))
+cprd_search_fuzzy("diabeties", select = c("MedCodeId", "Term", "dist"))
+cprd_search_fuzzy("xiabetes", max_dist = 1)
+cprd_search_fuzzy("diabeties", method = "jw", max_dist = 0.1)
 ```
 
-## Filtering
+For normalized methods (`jw`, `cosine`, `jaccard`), the default threshold is
+0.1 and must be within 0–1. Longer descriptions can require larger edit
+thresholds. Results are sorted by distance then observation count and capped
+at `max_results = 50`. Zero results still returns a tibble with its column types.
 
-All search functions support:
-- **`min_obs`**: Minimum number of observations (filters rare codes)
-- **`column`**: Search in a specific column (`"Term"`, `"OriginalReadCode"`, `"CleansedReadCode"`, `"MedCodeId"`, `"SnomedCTConceptId"`)
+## Dictionary format and cache
+
+Files must be tab-delimited with `MedCodeId`, `Term` and `Observations` columns.
+Standard additional columns are `OriginalReadCode`, `CleansedReadCode`,
+`SnomedCTConceptId`, `SnomedCTDescriptionId`, `Release` and `EmisCodeCategoryId`.
+Counts must be non-negative whole numbers or missing; other fields are read as
+character. This preserves leading zeroes and identifiers longer than R's exact
+numeric integer range. Explicitly retain character types when opening exports
+in other software as well.
+
+Repeated loads of the same path reuse the cache; `force = TRUE` reloads a changed
+file. An explicit different path switches dictionaries. A failed load leaves
+the previous dictionary intact. Editing the returned table does not mutate the
+cached dictionary.
+
+`cprd_combine()` keeps the first row for each `MedCodeId`, fills absent columns
+with missing values, and sorts by `Observations` when that column is present.
+Without that column, it preserves input order.
+
+## Interactive browsing and further help
+
+In an interactive R console, run `cprd_browse()`. Enter space-separated keywords,
+`OR: asthma, diabetes`, or `diabetes -gestational`; type `q` to quit.
+See `vignette("search-workflow", package = "cprd.search")` for a complete workflow.
+
+## Development
 
 ```r
-# Only codes with 50+ observations
-cprd_search("asthma", min_obs = 50)
-
-# Search by Read code prefix
-cprd_search("H33", column = "CleansedReadCode")
+install.packages(c("devtools", "roxygen2"))
+devtools::document()
+devtools::test()
+devtools::check(args = "--as-cran")
 ```
 
-## Exporting
-
-```r
-results <- cprd_search("family history", "lung cancer")
-cprd_export(results, "my_code_list.csv")
-```
-
-## Example Workflow: Building a Code List
-
-```r
-library(cprd.search)
-
-# Load dictionary
-load_cprd_dictionary("CPRDAurumMedical.txt")
-
-# Step 1: Broad search
-broad <- cprd_search_or("lung cancer", "lung carcinoma", "lung neoplasm",
-                         "bronchial cancer", "bronchial carcinoma")
-
-# Step 2: Refine — exclude screening/family history if you only want diagnoses
-refined <- cprd_search_exclude(
-  include = c("lung cancer"),
-  exclude = c("family history", "screening", "suspected")
-)
-
-# Step 3: Review and export
-print(refined)
-cprd_export(refined, "lung_cancer_codes.csv")
-```
+GitHub Actions checks R-release on Linux, macOS and Windows, plus R-devel and
+R-oldrel on Linux. The Linux release check also builds the PDF manual. Tests
+and examples use only synthetic data and temporary export files.
 
 ## License
 
-MIT
+MIT. See [LICENSE.md](LICENSE.md).

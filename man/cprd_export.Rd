@@ -7,25 +7,31 @@
 cprd_export(results, filename = "cprd_search_results.csv", open = FALSE)
 }
 \arguments{
-\item{results}{A \code{data.table} of search results (from any search function).}
+\item{results}{A tibble, data.frame, or data.table of search results.}
 
-\item{filename}{Character string. Output file path. Default is
-"cprd_search_results.csv".}
+\item{filename}{Output path. An existing file is overwritten.}
 
-\item{open}{Logical. If TRUE, attempt to open the file after saving.
-Default is FALSE.}
+\item{open}{Logical. Open the saved file only when \code{TRUE} and interactive.}
 }
 \value{
-The file path (invisibly).
+The supplied file path, invisibly.
 }
 \description{
-Save search results to a CSV file for use in other tools or for
-building a final code list.
+Save a tibble, data.frame, or data.table of search results to a UTF-8 CSV.
+Internal \code{term_lower} and fuzzy \code{dist} columns are omitted.
+}
+\details{
+Character identifiers are written without numeric conversion.
+When importing the CSV, specify character types for identifier columns
+(for example, \code{colClasses = "character"} in \code{\link[utils:read.table]{utils::read.csv()}}) to avoid
+another application removing leading zeroes or rounding long identifiers.
 }
 \examples{
-\dontrun{
-results <- cprd_search("family history", "lung cancer")
-cprd_export(results, "fh_lung_cancer_codes.csv")
-}
-
+load_cprd_dictionary(system.file("extdata", "synthetic-dictionary.tsv",
+                                 package = "cprd.search"))
+results <- cprd_search("diabetes")
+file <- tempfile(fileext = ".csv")
+cprd_export(results, file)
+utils::read.csv(file, colClasses = "character")
+unlink(file)
 }
