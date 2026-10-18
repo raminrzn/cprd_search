@@ -14,7 +14,7 @@ Checks completed on 2026-10-18 with no errors or warnings:
 - Windows Server 2022 x64, R 4.6.1 ucrt: `--as-cran --no-manual`, Status: OK.
 - macOS Tahoe 26.6.2 arm64, R 4.6.1: `--as-cran --no-manual`, Status: OK.
 - Ubuntu 24.04.5, R 4.5.3: `--as-cran --no-manual`, Status: OK.
-- Ubuntu 24.04.5, R-devel (2026-10-16 r90685): `--as-cran --no-manual`, Status: OK.
+- Ubuntu 24.04.5, R-devel (2026-10-17 r90697): `--as-cran --no-manual`, Status: OK.
 - The exact source tarball built by R 4.6.1 was then checked, without rebuilding,
   on R-devel (2026-10-17 r90697) with `--as-cran --no-manual` and incoming checks
   enabled. One NOTE: New submission.
@@ -30,8 +30,8 @@ NOTE. There are no other outstanding package notes.
 
 ## Reproducibility
 
-Workflow: https://github.com/raminrzn/cprd_search/actions/runs/39165427255
-Checked source commit: 4da196aa73d52fbad3b1256aa40f90c57cebcf0b
+Workflow: https://github.com/raminrzn/cprd_search/actions/runs/39166034282
+Checked source commit: fe9f2a2daa53280497539f87b21c5dad2a4cd3c0
 The CRAN-submission-bundle workflow artifact contains the exact tarball,
 its SHA-256 checksum, and the final R-devel check output.
 

@@ -13,6 +13,6 @@
 - [ ] Submit the checked tarball through https://cran.r-project.org/submit.html
   and accept the confirmation email sent to ramin.rezaeianzadeh@outlook.com.
 
-Use the CRAN-submission-bundle artifact from workflow run 39165427255.
+Use the CRAN-submission-bundle artifact from workflow run 39166034282.
 If package contents change, rebuild and repeat the release checks before
 submitting. The current candidate has not been submitted or merged.
