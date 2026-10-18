@@ -43,13 +43,21 @@ load_cprd_dictionary <- function(filepath = NULL, force = FALSE) {
     }
     # Reading all columns as character prevents loss of leading zeroes and
     # rounding of identifiers beyond double-precision integer accuracy.
+    read_problems <- character()
     dict <- withCallingHandlers(data.table::fread(
         file = filepath, sep = "\t", header = TRUE, quote = "", fill = FALSE,
         colClasses = "character", na.strings = NULL, encoding = "UTF-8",
         nThread = 1L, showProgress = FALSE, check.names = FALSE
     ), warning = function(w) {
-        stop("Cannot read dictionary completely: ", conditionMessage(w), call. = FALSE)
+        # Let fread finish cleaning up its native resources before rejecting
+        # the result; stopping inside its warning handler can interrupt cleanup.
+        read_problems <<- c(read_problems, conditionMessage(w))
+        invokeRestart("muffleWarning")
     })
+    if (length(read_problems)) {
+        stop("Cannot read dictionary completely: ", paste(read_problems, collapse = "; "),
+             call. = FALSE)
+    }
     if (anyDuplicated(names(dict)) || any(!nzchar(names(dict)))) {
         stop("Dictionary column names must be non-empty and unique.", call. = FALSE)
     }

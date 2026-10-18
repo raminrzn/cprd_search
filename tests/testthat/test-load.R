@@ -62,6 +62,8 @@ test_that("truncated or ragged files cannot silently replace the cache", {
                  "2\tasthma", "3\tcancer\t3"), path)
     expect_error(load_cprd_dictionary(path, force = TRUE), "Cannot read dictionary completely")
     expect_identical(ids(cprd_search("asthma")), "00005")
+    utils::write.table(synthetic_dictionary(), path, sep = "\t", quote = FALSE, row.names = FALSE)
+    expect_no_error(load_cprd_dictionary(path, force = TRUE))
 })
 
 test_that("numeric-looking code columns retain leading zeroes", {
