@@ -124,4 +124,4 @@ and examples use only synthetic data and temporary export files.
 
 ## License
 
-MIT. See [LICENSE.md](LICENSE.md).
+MIT. See the [full license text](https://github.com/raminrzn/cprd_search/blob/main/LICENSE.md).
