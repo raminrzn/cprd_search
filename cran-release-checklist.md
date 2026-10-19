@@ -1,18 +1,15 @@
-# CRAN release checklist
+# CRAN resubmission checklist — cprd.search 0.1.1
 
-- [x] Correct functional defects and add synthetic-data regression tests.
-- [x] Build using current R 4.6.1 and check the exact tarball on R-devel.
-- [x] Pass Linux, macOS, Windows and R-oldrel checks, with 167 assertions per run.
-- [x] Validate both the PDF and HTML manuals; run all noninteractive examples
-  and the workflow vignette.
-- [x] Confirm no name collision in current/archived CRAN or current Bioconductor.
-- [x] Record check environments and the expected new-submission NOTE in
-  cran-comments.md. Keep these release notes outside the source package.
-- [x] Save the checked source tarball and checksum in the CI submission artifact.
-- [ ] Review and merge PR #1.
-- [ ] Submit the checked tarball through https://cran.r-project.org/submit.html
-  and accept the confirmation email sent to ramin.rezaeianzadeh@outlook.com.
+- [x] Address the README license link requested by Uwe Ligges on 2026-10-19.
+- [x] Increase the candidate version from 0.1.0 to 0.1.1.
+- [x] Reproduce the original missing-file failure against the 0.1.0 tarball.
+- [x] Audit local file and anchor targets inside the revised built archive.
+- [x] Check all distinct external URLs; record the browser-verified CPRD HTTP 403 exception.
+- [x] Pass the revised release/platform checks and exact-tarball R-devel check.
+- [x] Record the final workflow, source SHA and archive checksum.
+- [ ] Merge PR #2 after successful validation.
+- [ ] Resubmit the checked archive with a response to CRAN's requested change.
+- [ ] Complete the maintainer email confirmation.
 
-Use the CRAN-submission-bundle artifact from workflow run 39166034282.
-If package contents change, rebuild and repeat the release checks before
-submitting. The current candidate has not been submitted or merged.
+Use the CRAN-submission-bundle artifact from workflow run 39288407755.
+If package contents change, rebuild and repeat the release checks.
