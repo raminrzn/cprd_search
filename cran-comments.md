@@ -1,40 +1,50 @@
-## Submission
+## Resubmission of cprd.search 0.1.1
 
-This is the first submission of cprd.search, which searches user-supplied
-Clinical Practice Research Datalink Aurum medical dictionaries. Only an entirely
-fabricated six-row dictionary is included. Examples, tests and the vignette
-require no CPRD account, real dictionary, patient data, or network access.
+This resubmission addresses Uwe Ligges's feedback of 2026-10-19:
 
-## Test environments and results
+> Found the following (possibly) invalid file URI: LICENSE.md, from README.md.
+> Please fix and resubmit.
 
-Checks completed on 2026-10-18 with no errors or warnings:
+The README now links to the public full license text at
+https://github.com/raminrzn/cprd_search/blob/main/LICENSE.md, rather than a
+relative file omitted from the source package. The version is increased from
+0.1.0 to 0.1.1. Package R code and the 167 synthetic-data test assertions are
+unchanged.
 
-- Ubuntu 24.04.5, R 4.6.1: `R CMD check --as-cran`, including CRAN incoming
-  checks and both PDF and HTML manual validation. One NOTE: New submission.
-- Windows Server 2022 x64, R 4.6.1 ucrt: `--as-cran --no-manual`, Status: OK.
-- macOS Tahoe 26.6.2 arm64, R 4.6.1: `--as-cran --no-manual`, Status: OK.
-- Ubuntu 24.04.5, R 4.5.3: `--as-cran --no-manual`, Status: OK.
-- Ubuntu 24.04.5, R-devel (2026-10-17 r90697): `--as-cran --no-manual`, Status: OK.
-- The exact source tarball built by R 4.6.1 was then checked, without rebuilding,
-  on R-devel (2026-10-17 r90697) with `--as-cran --no-manual` and incoming checks
-  enabled. One NOTE: New submission.
+## Link validation
 
-All environments pass 167 test assertions, with no failures, warnings or skips.
-Examples and vignette checks also pass. Incoming checks are enabled in the
-Linux release and final tarball checks, and disabled in the other matrix jobs.
+The exact built source archive is scanned independently for Markdown and HTML
+links, local files and anchors, and external URLs in source and help files.
+This audit reproduces the original 0.1.0 failure and passes for the revised
+archive. The release workflow requires this check before publishing the
+submission bundle; the checkout is not used to resolve file targets.
 
-## Notes
+The CPRD homepage https://www.cprd.com/ returns HTTP 403 to automated HEAD and
+GET requests from this machine. It was verified in a normal browser on
+2026-10-19 and displays the Clinical Practice Research Datalink homepage.
+The audit records this explicit exception; it does not ignore other failures.
+All three distinct GitHub URLs, including the replacement license URL, return
+HTTP 200.
 
-The sole NOTE in the two incoming-enabled checks is the expected first-submission
-NOTE. There are no other outstanding package notes.
+## Check results
 
-## Reproducibility
+Checks completed on 2026-10-19 with no errors or warnings:
 
-Workflow: https://github.com/raminrzn/cprd_search/actions/runs/39166034282
-Checked source commit: fe9f2a2daa53280497539f87b21c5dad2a4cd3c0
-The CRAN-submission-bundle workflow artifact contains the exact tarball,
-its SHA-256 checksum, and the final R-devel check output.
+- Linux, Windows and macOS with R 4.6.1; Linux with R 4.5.3 and
+  R-devel (2026-10-18 r90707).
+- Full Linux release check, including PDF and HTML manuals, examples and vignette.
+- The exact R 4.6.1-built source archive checked on R-devel without rebuilding.
+- All six jobs pass 167 assertions with no failures, test warnings or skips.
+- Incoming-enabled checks report only New submission; the other checks are OK.
+- Archive link audit: 30 documents, 119 local file/anchor references, four
+  distinct external URLs, no unresolved link errors. The CPRD exception above
+  remains explicit in the audit report.
 
-The name cprd.search was checked, case-insensitively, against current CRAN,
-archived CRAN, and current Bioconductor software on 2026-10-18; no collision
-was found. This package has not yet been submitted to CRAN.
+Workflow: https://github.com/raminrzn/cprd_search/actions/runs/39288407755
+Checked source: 629fb9c17aa535aaa23f0e2902d7804cb9bcdf32
+Archive SHA-256: 4d74a6c42a951e73772e31343887b0884e4250c18d757034a5ac0bf8c95305da
+
+The terms Aurum, CPRD and Datalink are the data provider's proper names and
+abbreviation; deduplicated describes combining results without duplicate codes.
+Only fabricated example dictionary data are distributed. Tests, examples and
+the vignette need no CPRD account, real dictionary, patient data or network.

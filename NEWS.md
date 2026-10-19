@@ -1,3 +1,9 @@
+# cprd.search 0.1.1
+
+* Replace the README's relative license link with the public full license URL,
+  so it works when LICENSE.md is excluded from the CRAN source archive.
+* Audit links in the built submission archive as part of the release workflow.
+
 # cprd.search 0.1.0
 
 Initial CRAN release candidate.

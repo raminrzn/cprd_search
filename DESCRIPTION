@@ -1,6 +1,6 @@
 Package: cprd.search
 Title: Search the Clinical Practice Research Datalink Aurum Dictionary
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     person("Ramin", "Rezaeianzadeh", role = c("aut", "cre"),
            email = "ramin.rezaeianzadeh@outlook.com")
