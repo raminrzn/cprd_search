@@ -36,7 +36,7 @@ Checks completed on 2026-10-19 with no errors or warnings:
 - The exact R 4.6.1-built source archive checked on R-devel without rebuilding.
 - All six jobs pass 167 assertions with no failures, test warnings or skips.
 - Incoming-enabled checks report only New submission; the other checks are OK.
-- Archive link audit: 30 documents, 120 local file/anchor references, four
+- Archive link audit: 30 documents, 119 local file/anchor references, four
   distinct external URLs, no unresolved link errors. The CPRD exception above
   remains explicit in the audit report.
 
