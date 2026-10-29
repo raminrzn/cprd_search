@@ -43,6 +43,10 @@ utils::read.csv(file, colClasses = "character")
 unlink(file)
 ```
 
+`cprd_export()` requires an explicit output path and never chooses a filename
+or directory for you. An existing file at that path is overwritten. The
+examples use `tempfile()` so they do not write into your working directory.
+
 For a real dictionary, obtain the file through your CPRD access arrangements
 (see [CPRD](https://www.cprd.com/)) and call
 `load_cprd_dictionary("path/to/CPRDAurumMedical.txt")`. No real dictionary or

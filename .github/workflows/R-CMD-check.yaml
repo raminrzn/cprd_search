@@ -85,6 +85,8 @@ jobs:
                               error_on = "warning", check_dir = "submission-check")
       - name: Record source archive checksum
         run: sha256sum release-build/*.tar.gz > source-SHA256.txt
+      - name: Audit file writes in the exact submission archive
+        run: Rscript .github/scripts/check-package-side-effects.R release-build/*.tar.gz
       - name: Audit links in the exact submission archive
         # CPRD's public homepage was verified in a browser on 2026-10-19;
         # its web firewall returns 403 to automated HEAD and GET requests.

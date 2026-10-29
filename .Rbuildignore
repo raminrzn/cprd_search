@@ -4,3 +4,4 @@
 ^\.github$
 ^cran-comments\.md$
 ^cran-release-checklist\.md$
+^cran-policy-audit\.md$
