@@ -56,3 +56,35 @@ an assurance of acceptance. CRAN's manual assessment remains authoritative.
   downloads. This supplements source review; it is not a general R sandbox.
 * Preserve final check logs, link report, source revision and archive SHA-256
   alongside the delivered audit and submission receipt.
+
+## Completed validation
+
+Checks completed on 29 October 2026 with no errors or warnings:
+
+* Linux R 4.6.2, Windows/macOS R 4.6.1, Linux R 4.5.3 and R-devel
+  (2026-10-26 r90766).
+* Full Linux release check, including PDF/HTML manuals, examples and rebuilt vignette.
+* Exact R 4.6.2-built source archive rechecked on R-devel without rebuilding.
+* All six jobs pass 190 assertions with zero failures, warnings or skips.
+* Incoming-enabled checks report only New submission; the other checks are OK.
+* File-write audit: eight help example blocks, installed example script, vignette
+  code and installed tests; all 776 observed operations remain in tempdir(),
+  package source/installation remain read-only, and no viewer/download is invoked.
+* Link audit: 31 documents, 119 local file/anchor references and four external
+  URLs, with no unresolved errors. Three GitHub URLs return HTTP 200. CPRD's
+  homepage returns HTTP 403 to automated HEAD/GET but was verified in a normal
+  browser on 29 October 2026; this explicit exception is retained in the report.
+
+Archive: 25,790 compressed bytes; 36 files, 97,875 unpacked bytes; no executable
+file modes or maintainer-only files. Vignette source and generated HTML are present.
+
+The regression negative control reproduced the old default-name overwrite using
+0.1.1 code entirely within tempdir(); 0.1.2 raises an error and preserves the sentinel.
+A local dependencies-only check also passed (vignette checks disabled); its only
+NOTE concerned the sandbox's inability to verify the system clock.
+
+Workflow: https://github.com/raminrzn/cprd_search/actions/runs/40954344406
+
+Checked source: 7df3b6f5dc62bbfe3096d5635db9e47552a9a764
+
+Archive SHA-256: 610168a1da7b298ae9dced9a1a188579346dd9ec69bf88380bddb86ac103b655

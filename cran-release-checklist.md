@@ -6,10 +6,10 @@
 - [x] Review all package sources against current CRAN policies; save cran-policy-audit.md.
 - [x] Use suggested testing packages conditionally.
 - [x] Add a built-archive audit of writes in examples, vignette and installed tests.
-- [ ] Pass all platform/R checks, including manuals and vignette.
-- [ ] Check the exact release-built archive on R-devel without rebuilding.
-- [ ] Pass archive link and file-write audits; verify/disclose any URL exception.
-- [ ] Record final workflow, source revision, archive hash and check logs.
+- [x] Pass all platform/R checks, including manuals and vignette.
+- [x] Check the exact release-built archive on R-devel without rebuilding.
+- [x] Pass archive link and file-write audits; verify/disclose any URL exception.
+- [x] Record final workflow, source revision, archive hash and check logs.
 - [ ] Merge the validated PR.
 - [ ] Upload the checked archive with the response to CRAN's feedback.
 - [ ] Complete maintainer email confirmation and record the receipt.
