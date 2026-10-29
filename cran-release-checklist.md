@@ -10,6 +10,10 @@
 - [x] Check the exact release-built archive on R-devel without rebuilding.
 - [x] Pass archive link and file-write audits; verify/disclose any URL exception.
 - [x] Record final workflow, source revision, archive hash and check logs.
-- [ ] Merge the validated PR.
-- [ ] Upload the checked archive with the response to CRAN's feedback.
-- [ ] Complete maintainer email confirmation and record the receipt.
+- [x] Merge the validated PR.
+- [x] Upload the checked archive with the response to CRAN's feedback.
+- [x] Complete maintainer email confirmation and record the receipt.
+
+Completed: PR #3 merged on 29 October 2026, followed by CRAN upload and
+maintainer confirmation (submission ID 360746). CRAN's submission receipt
+was received at 21:16:25 UTC. Manual review is pending.
