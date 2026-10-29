@@ -18,6 +18,13 @@ loadNamespace("testthat")
 loadNamespace("knitr")
 utils::untar(archive, exdir = root)
 src <- file.path(root, "cprd.search")
+# testthat creates its own _snaps directory even for suites without snapshots.
+# Copy the installed tests so the framework also leaves the installation intact.
+test_dir <- file.path(root, "run-tests")
+dir.create(test_dir)
+file.copy(list.files(system.file("tests", "testthat", package = "cprd.search"),
+                     full.names = TRUE, all.files = TRUE, no.. = TRUE),
+          test_dir, recursive = TRUE)
 
 examples <- list.files(file.path(src, "man"), "[.]Rd$", full.names = TRUE)
 scripts <- vapply(examples, function(rd) {
@@ -90,7 +97,8 @@ for (script in scripts) {
     cat("Auditing ", basename(script), "\n", sep = "")
     source(script, local = new.env(parent = globalenv()))
 }
-testthat::test_package("cprd.search", reporter = "summary", stop_on_failure = TRUE)
+testthat::test_dir(test_dir, package = "cprd.search", load_package = "installed",
+                   reporter = "summary", stop_on_failure = TRUE, stop_on_warning = TRUE)
 cat("Policy audit passed: ", example_count, " help examples, ",
     length(vignettes), " vignette(s), installed example script and full test suite.\n",
     "All ", length(writes), " observed file operations stayed inside tempdir(); ",
