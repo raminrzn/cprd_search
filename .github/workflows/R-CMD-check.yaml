@@ -39,7 +39,9 @@ jobs:
         if: matrix.config.manual
       - name: Install manual typesetting support
         if: matrix.config.manual
-        run: tlmgr install collection-fontsrecommended inconsolata texinfo
+        run: |
+          tlmgr update --self
+          tlmgr install collection-fontsrecommended inconsolata texinfo
       - name: Install HTML manual validator
         if: matrix.config.manual
         run: sudo apt-get update && sudo apt-get install -y tidy
