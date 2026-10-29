@@ -1,3 +1,10 @@
+# cprd.search 0.1.2
+
+* Require an explicit `filename` in `cprd_export()`; calling it without a path
+  now stops without creating or overwriting any file.
+* Document the required export path and add regression tests for file writes
+  and session state, plus an audit of bundled code in the submission archive.
+
 # cprd.search 0.1.1
 
 * Replace the README's relative license link with the public full license URL,

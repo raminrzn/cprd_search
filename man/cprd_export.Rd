@@ -4,12 +4,13 @@
 \alias{cprd_export}
 \title{Export Search Results to CSV}
 \usage{
-cprd_export(results, filename = "cprd_search_results.csv", open = FALSE)
+cprd_export(results, filename, open = FALSE)
 }
 \arguments{
 \item{results}{A tibble, data.frame, or data.table of search results.}
 
-\item{filename}{Output path. An existing file is overwritten.}
+\item{filename}{Required output path supplied explicitly by the caller.
+There is no default path. An existing file is overwritten.}
 
 \item{open}{Logical. Open the saved file only when \code{TRUE} and interactive.}
 }

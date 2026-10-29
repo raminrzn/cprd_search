@@ -72,6 +72,10 @@ codes
 Combining keeps the first occurrence of each medical code. It sorts by
 observation count when available and otherwise retains input order.
 
+Exporting requires an explicit output path; there is no default filename or
+directory. An existing file at that path is overwritten. Here we use a
+temporary file and remove it after reading it back.
+
 ```{r}
 output <- tempfile(fileext = ".csv")
 cprd_export(codes, output)

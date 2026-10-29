@@ -3,7 +3,8 @@
 #' Save a tibble, data.frame, or data.table of search results to a UTF-8 CSV.
 #' Internal `term_lower` and fuzzy `dist` columns are omitted.
 #' @param results A tibble, data.frame, or data.table of search results.
-#' @param filename Output path. An existing file is overwritten.
+#' @param filename Required output path supplied explicitly by the caller.
+#'   There is no default path. An existing file is overwritten.
 #' @param open Logical. Open the saved file only when `TRUE` and interactive.
 #' @return The supplied file path, invisibly.
 #' @details Character identifiers are written without numeric conversion.
@@ -19,7 +20,10 @@
 #' utils::read.csv(file, colClasses = "character")
 #' unlink(file)
 #' @export
-cprd_export <- function(results, filename = "cprd_search_results.csv", open = FALSE) {
+cprd_export <- function(results, filename, open = FALSE) {
+    if (missing(filename)) {
+        stop("'filename' must be supplied explicitly; no file was written.", call. = FALSE)
+    }
     if (!is.data.frame(results)) {
         stop("'results' must be a tibble, data.frame, or data.table.", call. = FALSE)
     }
